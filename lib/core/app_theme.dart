@@ -100,6 +100,57 @@ class CountdownTheme {
     );
   }
 
+  /// Convert color to hex string (without #)
+  static String colorToHex(Color color) {
+    return color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2);
+  }
+
+  /// Convert hex string to color
+  static Color hexToColor(String hex) {
+    // Remove # if present
+    hex = hex.replaceAll('#', '');
+    // Ensure it has alpha channel
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+    return Color(int.parse(hex, radix: 16));
+  }
+
+  /// Get color hex for storage (primary color only)
+  String getColorHex() {
+    return colorToHex(primaryColor);
+  }
+
+  /// Get gradient colors as comma-separated hex values
+  String getGradientHex() {
+    if (isGradient && secondaryColor != null) {
+      return '${colorToHex(primaryColor)},${colorToHex(secondaryColor!)}';
+    }
+    return colorToHex(primaryColor);
+  }
+
+  /// Create theme from hex color(s)
+  static CountdownTheme fromHex(String hex, {String? name}) {
+    final colors = hex.split(',');
+    final primaryColor = hexToColor(colors[0]);
+
+    if (colors.length > 1) {
+      final secondaryColor = hexToColor(colors[1]);
+      return CountdownTheme(
+        name: name ?? 'Custom',
+        primaryColor: primaryColor,
+        secondaryColor: secondaryColor,
+        isGradient: true,
+      );
+    }
+
+    return CountdownTheme(
+      name: name ?? 'Custom',
+      primaryColor: primaryColor,
+      isGradient: false,
+    );
+  }
+
   static CountdownTheme fromName(String name) {
     return presets.firstWhere(
       (theme) => theme.name == name,

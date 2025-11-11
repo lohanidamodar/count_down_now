@@ -132,7 +132,16 @@ class _CountdownViewPageState extends ConsumerState<CountdownViewPage> {
     }
 
     final countdown = _countdown!;
-    final theme = CountdownTheme.fromName(countdown.themeColor);
+
+    // Parse theme from hex color or fallback to name matching
+    CountdownTheme theme;
+    try {
+      theme = CountdownTheme.fromHex(countdown.themeColor);
+    } catch (e) {
+      // Fallback to name matching for old data
+      theme = CountdownTheme.fromName(countdown.themeColor);
+    }
+
     final timeRemaining = countdown.timeRemaining;
     final isFinished = countdown.isFinished;
 

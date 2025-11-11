@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'app_router.dart';
 import 'core/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   runApp(const ProviderScope(child: CountDownNowApp()));
 }
 

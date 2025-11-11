@@ -25,6 +25,7 @@ class _CreateEditCountdownPageState
   TimeOfDay? _targetTime;
   String _selectedEmoji = '🎉';
   CountdownTheme _selectedTheme = CountdownTheme.presets[0];
+  bool _isPublic = false;
   bool _isLoading = false;
   Countdown? _existingCountdown;
 
@@ -87,10 +88,18 @@ class _CreateEditCountdownPageState
           minute: countdown.targetDateTime.minute,
         );
         _selectedEmoji = countdown.emoji ?? '🎉';
-        _selectedTheme = CountdownTheme.presets.firstWhere(
-          (theme) => theme.name == countdown.themeColor,
-          orElse: () => CountdownTheme.presets[0],
-        );
+        _isPublic = countdown.isPublic;
+
+        // Parse theme from hex color or fallback to name matching
+        try {
+          _selectedTheme = CountdownTheme.fromHex(countdown.themeColor);
+        } catch (e) {
+          // Fallback to name matching for old data
+          _selectedTheme = CountdownTheme.presets.firstWhere(
+            (theme) => theme.name == countdown.themeColor,
+            orElse: () => CountdownTheme.presets[0],
+          );
+        }
       });
     } catch (e) {
       if (mounted) {
@@ -164,9 +173,9 @@ class _CreateEditCountdownPageState
           : _descriptionController.text.trim(),
       emoji: _selectedEmoji,
       targetDateTime: targetDateTime,
-      themeColor: _selectedTheme.name,
+      themeColor: _selectedTheme.getGradientHex(),
       ownerId: authState.user?.$id,
-      isPublic: true,
+      isPublic: _isPublic,
       createdAt: _existingCountdown?.createdAt ?? DateTime.now(),
     );
 
@@ -417,6 +426,28 @@ class _CreateEditCountdownPageState
                               ),
                             );
                           }).toList(),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Public/Private Toggle
+                        Card(
+                          color: Colors.blue.shade50,
+                          child: SwitchListTile(
+                            title: const Text('Make this countdown public'),
+                            subtitle: Text(
+                              _isPublic
+                                  ? 'Anyone with the link can view this countdown'
+                                  : 'Only you can view this countdown',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            value: _isPublic,
+                            onChanged: (value) {
+                              setState(() => _isPublic = value);
+                            },
+                          ),
                         ),
                         const SizedBox(height: 32),
 

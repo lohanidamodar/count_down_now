@@ -21,6 +21,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   TimeOfDay? _targetTime;
   String _selectedEmoji = '🎉';
   CountdownTheme _selectedTheme = CountdownTheme.presets[0];
+  bool _isPublic = false;
 
   final List<String> _popularEmojis = [
     '🎉',
@@ -93,9 +94,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           : _descriptionController.text.trim(),
       emoji: _selectedEmoji,
       targetDateTime: targetDateTime,
-      themeColor: _selectedTheme.name,
+      themeColor: _selectedTheme.getGradientHex(),
       ownerId: authState.user?.$id,
-      isPublic: true,
+      isPublic: _isPublic,
       createdAt: DateTime.now(),
     );
 
@@ -354,6 +355,28 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 setState(() => _selectedTheme = theme);
                               }
                             },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Public/Private Toggle
+                          Card(
+                            color: Colors.blue.shade50,
+                            child: SwitchListTile(
+                              title: const Text('Make this countdown public'),
+                              subtitle: Text(
+                                _isPublic
+                                    ? 'Anyone with the link can view this countdown'
+                                    : 'Only you can view this countdown',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                              value: _isPublic,
+                              onChanged: (value) {
+                                setState(() => _isPublic = value);
+                              },
+                            ),
                           ),
                           const SizedBox(height: 24),
 
