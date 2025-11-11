@@ -71,16 +71,12 @@ class CountdownFormState extends ConsumerState<CountdownForm> {
     _selectedEmoji = countdown.emoji ?? '🎉';
     _isPublic = countdown.isPublic;
 
-    // Parse theme from hex color or fallback to name matching
-    try {
-      _selectedTheme = CountdownTheme.fromHex(countdown.themeColor);
-    } catch (e) {
-      // Fallback to name matching for old data
-      _selectedTheme = CountdownTheme.presets.firstWhere(
-        (theme) => theme.name == countdown.themeColor,
-        orElse: () => CountdownTheme.presets[0],
-      );
-    }
+    // Match theme by comparing hex values to find the preset
+    final hexValue = countdown.themeColor;
+    _selectedTheme = CountdownTheme.presets.firstWhere(
+      (theme) => theme.getGradientHex() == hexValue,
+      orElse: () => CountdownTheme.presets[0],
+    );
   }
 
   @override
