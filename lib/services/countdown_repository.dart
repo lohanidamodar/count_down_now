@@ -6,24 +6,24 @@ import 'appwrite_client.dart';
 
 /// Repository for Countdown CRUD operations
 class CountdownRepository {
-  final Databases _databases;
+  final TablesDB _tablesDB;
 
-  CountdownRepository(this._databases);
+  CountdownRepository(this._tablesDB);
 
   /// Get countdown by slug
   Future<Countdown?> getBySlug(String slug) async {
     try {
-      final response = await _databases.listDocuments(
+      final response = await _tablesDB.listRows(
         databaseId: AppConfig.appwriteDatabaseId,
-        collectionId: AppConfig.appwriteCollectionIdCountdowns,
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
         queries: [Query.equal('slug', slug), Query.limit(1)],
       );
 
-      if (response.documents.isEmpty) {
+      if (response.rows.isEmpty) {
         return null;
       }
 
-      return Countdown.fromMap(response.documents.first.data);
+      return Countdown.fromMap(response.rows.first.data);
     } on AppwriteException {
       // Silently return null if not found
       return null;
@@ -35,16 +35,16 @@ class CountdownRepository {
   /// Get all countdowns by owner
   Future<List<Countdown>> getByOwner(String ownerId) async {
     try {
-      final response = await _databases.listDocuments(
+      final response = await _tablesDB.listRows(
         databaseId: AppConfig.appwriteDatabaseId,
-        collectionId: AppConfig.appwriteCollectionIdCountdowns,
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
         queries: [
           Query.equal('ownerId', ownerId),
           Query.orderDesc('\$createdAt'),
         ],
       );
 
-      return response.documents
+      return response.rows
           .map((doc) => Countdown.fromMap(doc.data))
           .toList();
     } on AppwriteException {
@@ -57,10 +57,10 @@ class CountdownRepository {
   /// Create a new countdown
   Future<Countdown> create(Countdown countdown) async {
     try {
-      final response = await _databases.createDocument(
+      final response = await _tablesDB.createRow(
         databaseId: AppConfig.appwriteDatabaseId,
-        collectionId: AppConfig.appwriteCollectionIdCountdowns,
-        documentId: ID.unique(),
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
+        rowId: ID.unique(),
         data: countdown.toMap(),
       );
 
@@ -77,10 +77,10 @@ class CountdownRepository {
         throw Exception('Cannot update countdown without an ID');
       }
 
-      final response = await _databases.updateDocument(
+      final response = await _tablesDB.updateRow(
         databaseId: AppConfig.appwriteDatabaseId,
-        collectionId: AppConfig.appwriteCollectionIdCountdowns,
-        documentId: countdown.id!,
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
+        rowId: countdown.id!,
         data: countdown.toMap(),
       );
 
@@ -93,10 +93,10 @@ class CountdownRepository {
   /// Delete a countdown
   Future<void> delete(String id) async {
     try {
-      await _databases.deleteDocument(
+      await _tablesDB.deleteRow(
         databaseId: AppConfig.appwriteDatabaseId,
-        collectionId: AppConfig.appwriteCollectionIdCountdowns,
-        documentId: id,
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
+        rowId: id,
       );
     } catch (e) {
       rethrow;
@@ -106,8 +106,8 @@ class CountdownRepository {
 
 /// Provider for CountdownRepository
 final countdownRepositoryProvider = Provider<CountdownRepository>((ref) {
-  final databases = ref.watch(databasesProvider);
-  return CountdownRepository(databases);
+  final tablesDB = ref.watch(tablesDBProvider);
+  return CountdownRepository(tablesDB);
 });
 
 /// In-memory storage for anonymous countdowns

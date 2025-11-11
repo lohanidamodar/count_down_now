@@ -284,7 +284,7 @@ class _CountdownViewPageState extends ConsumerState<CountdownViewPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${label}${value == 1 ? '' : 's'}',
+            '$label${value == 1 ? '' : 's'}',
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withValues(alpha: 0.9),

@@ -17,6 +17,9 @@ migrate_working_dir/
 .env.local
 .env.*.local
 
+# VS Code - allow .vscode folder but ignore local settings
+.vscode/settings.local.json
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -48,3 +51,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.vscode/launch.json
+.vscode/settings.json
