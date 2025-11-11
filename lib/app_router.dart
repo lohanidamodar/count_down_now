@@ -17,20 +17,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
+      final hasError = authState.error != null;
       final isGoingToDashboard = state.matchedLocation == '/dashboard';
       final isGoingToLogin = state.matchedLocation == '/login';
 
-      // Don't redirect while loading
-      if (isLoading) return null;
+      // Don't redirect while loading or if there's an error
+      if (isLoading || hasError) return null;
 
       // Redirect to login if going to dashboard without auth
       if (isGoingToDashboard && !isAuthenticated) {
         return '/login';
       }
 
-      // Redirect to home if going to login while authenticated
+      // Redirect to dashboard if going to login while authenticated
       if (isGoingToLogin && isAuthenticated) {
-        return '/';
+        return '/dashboard';
       }
 
       return null;

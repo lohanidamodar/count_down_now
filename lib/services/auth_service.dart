@@ -107,12 +107,12 @@ class AuthStateNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _authService = ref.read(authServiceProvider);
-    _checkAuthStatus();
-    return const AuthState();
+    // Don't call async methods in build - schedule it for after initialization
+    Future.microtask(() => _checkAuthStatus());
+    return const AuthState(isLoading: true);
   }
 
   Future<void> _checkAuthStatus() async {
-    state = state.copyWith(isLoading: true);
     try {
       final user = await _authService.getCurrentUser();
       state = AuthState(user: user, isLoading: false);

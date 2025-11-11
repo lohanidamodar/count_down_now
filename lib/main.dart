@@ -4,6 +4,7 @@ import 'app_router.dart';
 import 'core/app_theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: CountDownNowApp()));
 }
 

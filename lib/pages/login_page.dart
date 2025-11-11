@@ -48,8 +48,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
       }
 
+      // Only navigate if still mounted and auth was successful
       if (mounted) {
-        context.go('/dashboard');
+        final authState = ref.read(authStateProvider);
+        if (authState.isAuthenticated && authState.error == null) {
+          context.go('/dashboard');
+        } else if (authState.error != null) {
+          // Show error if it wasn't caught in the catch block
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_getErrorMessage(authState.error!)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -68,18 +80,40 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   String _getErrorMessage(String error) {
-    if (error.contains('Invalid credentials')) {
+    if (error.contains('Invalid credentials') ||
+        error.contains('invalid-credentials')) {
       return 'Invalid email or password';
-    } else if (error.contains('user with the same email already exists')) {
+    } else if (error.contains('user with the same email already exists') ||
+        error.contains('user_already_exists')) {
       return 'An account with this email already exists';
-    } else if (error.contains('Password must be')) {
+    } else if (error.contains('Password must be') ||
+        error.contains('password_validation')) {
       return 'Password must be at least 8 characters';
+    } else if (error.contains('invalid-email')) {
+      return 'Invalid email address';
+    } else if (error.contains('user_unauthorized') || error.contains('401')) {
+      return 'Invalid email or password';
     }
     return 'An error occurred. Please try again.';
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes to show errors
+    ref.listen<AuthState>(authStateProvider, (previous, next) {
+      if (next.error != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_getErrorMessage(next.error!)),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        // Clear the error after showing it
+        ref.read(authStateProvider.notifier).clearError();
+      }
+    });
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
