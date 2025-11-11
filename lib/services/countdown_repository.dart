@@ -10,6 +10,24 @@ class CountdownRepository {
 
   CountdownRepository(this._tablesDB);
 
+  /// Get countdown by ID
+  Future<Countdown?> getById(String id) async {
+    try {
+      final response = await _tablesDB.getRow(
+        databaseId: AppConfig.appwriteDatabaseId,
+        tableId: AppConfig.appwriteCollectionIdCountdowns,
+        rowId: id,
+      );
+
+      return Countdown.fromMap(response.data);
+    } on AppwriteException {
+      // Silently return null if not found
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Get countdown by slug
   Future<Countdown?> getBySlug(String slug) async {
     try {
@@ -44,9 +62,7 @@ class CountdownRepository {
         ],
       );
 
-      return response.rows
-          .map((doc) => Countdown.fromMap(doc.data))
-          .toList();
+      return response.rows.map((doc) => Countdown.fromMap(doc.data)).toList();
     } on AppwriteException {
       return [];
     } catch (e) {

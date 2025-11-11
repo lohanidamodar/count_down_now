@@ -57,8 +57,51 @@ class _CreateEditCountdownPageState
 
   Future<void> _loadCountdown() async {
     setState(() => _isLoading = true);
-    // TODO: Load existing countdown by ID
-    setState(() => _isLoading = false);
+
+    try {
+      final repository = ref.read(countdownRepositoryProvider);
+      final countdown = await repository.getById(widget.countdownId!);
+
+      if (countdown == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Countdown not found')));
+          context.go('/dashboard');
+        }
+        return;
+      }
+
+      // Pre-populate form fields with existing countdown data
+      setState(() {
+        _existingCountdown = countdown;
+        _titleController.text = countdown.title;
+        _descriptionController.text = countdown.description ?? '';
+        _targetDate = DateTime(
+          countdown.targetDateTime.year,
+          countdown.targetDateTime.month,
+          countdown.targetDateTime.day,
+        );
+        _targetTime = TimeOfDay(
+          hour: countdown.targetDateTime.hour,
+          minute: countdown.targetDateTime.minute,
+        );
+        _selectedEmoji = countdown.emoji ?? '🎉';
+        _selectedTheme = CountdownTheme.presets.firstWhere(
+          (theme) => theme.name == countdown.themeColor,
+          orElse: () => CountdownTheme.presets[0],
+        );
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading countdown: $e')));
+        context.go('/dashboard');
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
