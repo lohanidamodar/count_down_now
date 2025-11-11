@@ -110,6 +110,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes and reload when user changes
+    ref.listen<AuthState>(authStateProvider, (previous, next) {
+      // Reload if user ID changed (logged in/out or switched accounts)
+      if (previous?.user?.$id != next.user?.$id) {
+        _loadCountdowns();
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Countdowns'),
@@ -304,6 +312,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     tooltip: 'Copy Link',
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.grey.shade200,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () => context.go('/create?id=${countdown.id}'),
+                    tooltip: 'Edit',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.orange.shade100,
                     ),
                   ),
                   const SizedBox(width: 8),

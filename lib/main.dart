@@ -5,7 +5,6 @@ import 'app_router.dart';
 import 'core/app_theme.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
   runApp(const ProviderScope(child: CountDownNowApp()));
 }

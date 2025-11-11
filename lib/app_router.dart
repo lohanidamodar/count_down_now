@@ -8,21 +8,30 @@ import 'pages/dashboard_page.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 
+/// Notifier to refresh GoRouter when auth state changes
+class GoRouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+  GoRouterNotifier(this._ref) {
+    _ref.listen(authStateProvider, (_, __) => notifyListeners());
+  }
+}
+
 /// GoRouter configuration
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final notifier = GoRouterNotifier(ref);
 
   return GoRouter(
+    refreshListenable: notifier,
     initialLocation: '/',
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
-      final hasError = authState.error != null;
       final isGoingToDashboard = state.matchedLocation == '/dashboard';
       final isGoingToLogin = state.matchedLocation == '/login';
 
-      // Don't redirect while loading or if there's an error
-      if (isLoading || hasError) return null;
+      // Don't redirect while loading
+      if (isLoading) return null;
 
       // Redirect to login if going to dashboard without auth
       if (isGoingToDashboard && !isAuthenticated) {

@@ -29,7 +29,8 @@ class CountdownRepository {
   }
 
   /// Get countdown by slug
-  Future<Countdown?> getBySlug(String slug) async {
+  /// Appwrite permissions will handle access control automatically
+  Future<Countdown?> getBySlug(String slug, {String? currentUserId}) async {
     try {
       final response = await _tablesDB.listRows(
         databaseId: AppConfig.appwriteDatabaseId,
@@ -43,7 +44,7 @@ class CountdownRepository {
 
       return Countdown.fromMap(response.rows.first.data);
     } on AppwriteException {
-      // Silently return null if not found
+      // Silently return null if not found or no permission
       return null;
     } catch (e) {
       rethrow;
@@ -73,11 +74,27 @@ class CountdownRepository {
   /// Create a new countdown
   Future<Countdown> create(Countdown countdown) async {
     try {
+      // Build permissions based on isPublic flag
+      final permissions = <String>[];
+
+      // Owner always gets full permissions
+      if (countdown.ownerId != null) {
+        permissions.add(Permission.read(Role.user(countdown.ownerId!)));
+        permissions.add(Permission.update(Role.user(countdown.ownerId!)));
+        permissions.add(Permission.delete(Role.user(countdown.ownerId!)));
+      }
+
+      // If public, add read permission for anyone
+      if (countdown.isPublic) {
+        permissions.add(Permission.read(Role.any()));
+      }
+
       final response = await _tablesDB.createRow(
         databaseId: AppConfig.appwriteDatabaseId,
         tableId: AppConfig.appwriteCollectionIdCountdowns,
         rowId: ID.unique(),
         data: countdown.toMap(),
+        permissions: permissions,
       );
 
       return Countdown.fromMap(response.data);
@@ -93,11 +110,27 @@ class CountdownRepository {
         throw Exception('Cannot update countdown without an ID');
       }
 
+      // Build permissions based on isPublic flag
+      final permissions = <String>[];
+
+      // Owner always gets full permissions
+      if (countdown.ownerId != null) {
+        permissions.add(Permission.read(Role.user(countdown.ownerId!)));
+        permissions.add(Permission.update(Role.user(countdown.ownerId!)));
+        permissions.add(Permission.delete(Role.user(countdown.ownerId!)));
+      }
+
+      // If public, add read permission for anyone
+      if (countdown.isPublic) {
+        permissions.add(Permission.read(Role.any()));
+      }
+
       final response = await _tablesDB.updateRow(
         databaseId: AppConfig.appwriteDatabaseId,
         tableId: AppConfig.appwriteCollectionIdCountdowns,
         rowId: countdown.id!,
         data: countdown.toMap(),
+        permissions: permissions,
       );
 
       return Countdown.fromMap(response.data);
