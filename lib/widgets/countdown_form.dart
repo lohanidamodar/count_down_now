@@ -122,9 +122,8 @@ class CountdownFormState extends ConsumerState<CountdownForm> {
             controller: _titleController,
             decoration: InputDecoration(
               labelText: widget.isCompact ? 'Event Title' : 'Event Title *',
-              hintText: widget.isCompact
-                  ? 'My Birthday Party'
-                  : 'My Awesome Event',
+              hintText:
+                  widget.isCompact ? 'My Birthday Party' : 'My Awesome Event',
               prefixIcon: const Icon(Icons.title),
             ),
             validator: (value) {
@@ -140,12 +139,12 @@ class CountdownFormState extends ConsumerState<CountdownForm> {
           TextFormField(
             controller: _descriptionController,
             decoration: InputDecoration(
-              labelText: widget.isCompact
-                  ? 'Description (optional)'
-                  : 'Description',
-              hintText: widget.isCompact
-                  ? 'Add some details...'
-                  : 'Add more details about your event...',
+              labelText:
+                  widget.isCompact ? 'Description (optional)' : 'Description',
+              hintText:
+                  widget.isCompact
+                      ? 'Add some details...'
+                      : 'Add more details about your event...',
               prefixIcon: const Icon(Icons.description),
             ),
             maxLines: widget.isCompact ? 2 : 3,
@@ -231,84 +230,96 @@ class CountdownFormState extends ConsumerState<CountdownForm> {
       children: [
         Text(
           'Select Emoji',
-          style: widget.isCompact
-              ? Theme.of(context).textTheme.titleSmall
-              : Theme.of(context).textTheme.titleMedium,
+          style:
+              widget.isCompact
+                  ? Theme.of(context).textTheme.titleSmall
+                  : Theme.of(context).textTheme.titleMedium,
         ),
         SizedBox(height: widget.isCompact ? 8 : 12),
         Wrap(
           spacing: spacing,
           runSpacing: spacing,
-          children: emojis.map((emoji) {
-            final isSelected = emoji == _selectedEmoji;
-            return InkWell(
-              onTap: () => setState(() => _selectedEmoji = emoji),
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: Container(
-                width: widget.isCompact ? null : 56,
-                height: widget.isCompact ? null : 56,
-                padding: widget.isCompact ? const EdgeInsets.all(8) : null,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey.shade300,
-                    width: isSelected ? (widget.isCompact ? 2 : 3) : 1,
-                  ),
+          children:
+              emojis.map((emoji) {
+                final isSelected = emoji == _selectedEmoji;
+                return InkWell(
+                  onTap: () => setState(() => _selectedEmoji = emoji),
                   borderRadius: BorderRadius.circular(borderRadius),
-                  color: !widget.isCompact && isSelected
-                      ? Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1)
-                      : null,
-                ),
-                child: widget.isCompact
-                    ? Text(emoji, style: const TextStyle(fontSize: 24))
-                    : Center(
-                        child: Text(
-                          emoji,
-                          style: const TextStyle(fontSize: 28),
-                        ),
+                  child: Container(
+                    width: widget.isCompact ? null : 56,
+                    height: widget.isCompact ? null : 56,
+                    padding: widget.isCompact ? const EdgeInsets.all(8) : null,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color:
+                            isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.shade300,
+                        width: isSelected ? (widget.isCompact ? 2 : 3) : 1,
                       ),
-              ),
-            );
-          }).toList(),
+                      borderRadius: BorderRadius.circular(borderRadius),
+                      color:
+                          !widget.isCompact && isSelected
+                              ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.1)
+                              : null,
+                    ),
+                    child:
+                        widget.isCompact
+                            ? Text(emoji, style: const TextStyle(fontSize: 24))
+                            : Center(
+                              child: Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 28),
+                              ),
+                            ),
+                  ),
+                );
+              }).toList(),
         ),
       ],
     );
   }
 
   Widget _buildThemeSelector() {
-    return DropdownButtonFormField<CountdownTheme>(
-      initialValue: _selectedTheme,
-      decoration: const InputDecoration(
-        labelText: 'Color Theme',
-        prefixIcon: Icon(Icons.palette),
-      ),
-      items: CountdownTheme.presets.map((theme) {
-        return DropdownMenuItem(
-          value: theme,
-          child: Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children:
+          CountdownTheme.presets.map((theme) {
+            final isSelected = theme == _selectedTheme;
+            return InkWell(
+              onTap: () => setState(() => _selectedTheme = theme),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.primaryColor,
-                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        isSelected
+                            ? Theme.of(context).colorScheme.inverseSurface
+                            : Colors.grey.shade300,
+                    width: 4,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: theme.getGradient(),
+                  color:
+                      theme.getGradient() == null ? theme.primaryColor : null,
+                ),
+                child: Text(
+                  theme.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(theme.name),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: (theme) {
-        if (theme != null) {
-          setState(() => _selectedTheme = theme);
-        }
-      },
+            );
+          }).toList(),
     );
   }
 
@@ -318,9 +329,10 @@ class CountdownFormState extends ConsumerState<CountdownForm> {
   DateTime? get targetDate => _targetDate;
   TimeOfDay? get targetTime => _targetTime;
   String get title => _titleController.text.trim();
-  String? get description => _descriptionController.text.trim().isEmpty
-      ? null
-      : _descriptionController.text.trim();
+  String? get description =>
+      _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim();
   String get emoji => _selectedEmoji;
   CountdownTheme get theme => _selectedTheme;
   bool get isPublic => _isPublic;
